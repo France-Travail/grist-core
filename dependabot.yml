@@ -1,6 +1,11 @@
 version: 2
 updates:
   - package-ecosystem: "pip"
-    directory: "/"           
+    directory: "/"  # ou le chemin vers requirements.txt
     schedule:
-      interval: "daily"     
+      interval: "weekly"
+
+  - package-ecosystem: "npm"
+    directory: "/"  # ou le chemin vers package.json
+    schedule:
+      interval: "weekly"
