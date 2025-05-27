@@ -11,6 +11,7 @@
 
 import {FullUser} from 'app/common/LoginSessionAPI';
 import {StringUnion} from 'app/common/StringUnion';
+import {INotifier} from 'app/server/lib/INotifier';
 
 /**
  * Structure of email requests. Each request contains a list of
@@ -42,10 +43,12 @@ export interface SendGridAddress {
   email: string;
   name: string;
 }
-
+export interface DynamicTemplateData {
+  [key: string]: any
+}
 export interface SendGridPersonalization {
   to: SendGridAddress[];
-  dynamic_template_data: {[key: string]: any};
+  dynamic_template_data: DynamicTemplateData;
 }
 
 /**
@@ -105,17 +108,7 @@ export interface SendGridConfig {
       name: string;
     }
   },
-  template: {
-    invite?: string;
-    billingManagerInvite?: string;
-    memberChange?: string;
-    trialPeriodEndingSoon?: string;
-    twoFactorMethodAdded?: string;
-    twoFactorMethodRemoved?: string;
-    twoFactorPhoneNumberChanged?: string;
-    twoFactorEnabled?: string;
-    twoFactorDisabled?: string;
-  },
+  template: {[templateName in TemplateName]?: string},
   list: {
     singleUserOnboarding?: string;
     appSumoSignUps?: string;
@@ -141,6 +134,18 @@ export const TwoFactorEvents = StringUnion(
 
 export type TwoFactorEvent = typeof TwoFactorEvents.type;
 
+export const TemplateName = StringUnion(
+  "billingManagerInvite",
+  "invite",
+  "memberChange",
+  "trialPeriodEndingSoon",
+  ... TwoFactorEvents.values
+);
+export type TemplateName = typeof TemplateName.type;
+
+
 export interface SendGridMailWithTemplateId extends SendGridMail {
   template_id: string;
 }
+
+export type NotifierEventName = keyof INotifier;

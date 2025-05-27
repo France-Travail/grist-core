@@ -11,6 +11,7 @@ export interface UserProfile {
   connectId?: string|null, // used by GristConnect to identify user in external provider.
   loginMethod?: 'Google'|'Email + Password'|'External';
   locale?: string|null;
+  extra?: Record<string, any>; // extra fields from the user profile, e.g. from OIDC.
 }
 
 /**
@@ -35,6 +36,7 @@ export interface FullUser extends UserProfile {
   ref?: string|null; // Not filled for anonymous users.
   allowGoogleLogin?: boolean; // when present, specifies whether logging in via Google is possible.
   isSupport?: boolean; // set if user is a special support user.
+  firstLoginAt?: Date | null;
   prefs?: UserPrefs;
   createdAt?: Date; // Not filled for anonymous users.
 }

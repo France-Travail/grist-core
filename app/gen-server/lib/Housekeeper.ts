@@ -2,11 +2,13 @@ import { ApiError } from 'app/common/ApiError';
 import { delay } from 'app/common/delay';
 import { buildUrlId } from 'app/common/gristUrls';
 import { normalizedDateTimeString } from 'app/common/normalizedDateTimeString';
+import { isAffirmative } from "app/common/gutil";
 import { Document } from 'app/gen-server/entity/Document';
 import { Organization } from 'app/gen-server/entity/Organization';
 import { Workspace } from 'app/gen-server/entity/Workspace';
 import { HomeDBManager, Scope } from 'app/gen-server/lib/homedb/HomeDBManager';
 import { fromNow } from 'app/gen-server/sqlUtils';
+import { appSettings } from 'app/server/lib/AppSettings';
 import { getAuthorizedUserId } from 'app/server/lib/Authorizer';
 import { expressWrap } from 'app/server/lib/expressWrap';
 import { GristServer } from 'app/server/lib/GristServer';
@@ -27,8 +29,17 @@ export const Timings = {
   VERSION_CHECK_OFFSET_MS: 20 * 1000, // wait 20 seconds before running the first check
   AGE_THRESHOLD_OFFSET: '-30 days',            // should be an interval known by postgres + sqlite
 
-  SYNC_WORK_LIMIT_MS: 50,      // Don't keep doing synchronous work longer than this.
-  SYNC_WORK_BREAK_MS: 50,      // Once reached SYNC_WORK_LIMIT_MS, take a break of this length.
+  // Don't keep doing synchronous work longer than this.
+  SYNC_WORK_LIMIT_MS: appSettings.section('telemetry').section('syncWork').flag('limitMs').requireInt({
+    envVar: 'GRIST_SYNC_WORK_LIMIT_MS',
+    defaultValue: 50,
+  }),
+
+  // Once reached SYNC_WORK_LIMIT_MS, take a break of this length.
+  SYNC_WORK_BREAK_MS: appSettings.section('telemetry').section('syncWork').flag('breakMs').requireInt({
+    envVar: 'GRIST_SYNC_WORK_BREAK_MS',
+    defaultValue: 50,
+  }),
 };
 
 /**
@@ -46,6 +57,7 @@ export const Timings = {
 export class Housekeeper {
   private _deleteTrashinterval?: NodeJS.Timeout;
   private _logMetricsInterval?: NodeJS.Timeout;
+  private _checkVersionUpdatesTimeout?: NodeJS.Timeout;
   private _checkVersionUpdatesInterval?: NodeJS.Timeout;
 
   private _electionKey?: string;
@@ -66,9 +78,9 @@ export class Housekeeper {
     this._logMetricsInterval = setInterval(() => {
       this.logMetricsExclusively().catch(log.warn.bind(log));
     }, Timings.LOG_METRICS_PERIOD_MS);
-    setTimeout(() => {
+    this._checkVersionUpdatesTimeout = setTimeout(() => {
       this.checkVersionUpdates().catch(log.warn.bind(log));
-    }, Timings.VERSION_CHECK_OFFSET_MS);
+    }, isAffirmative(process.env.GRIST_TEST_IMMEDIATE_VERSION_CHECK) ? 0 : Timings.VERSION_CHECK_OFFSET_MS);
     this._checkVersionUpdatesInterval = setInterval(() => {
       this.checkVersionUpdatesExclusively().catch(log.warn.bind(log));
     }, Timings.VERSION_CHECK_PERIOD_MS);
@@ -86,6 +98,8 @@ export class Housekeeper {
       clearInterval(this[interval]);
       this[interval] = undefined;
     }
+    clearTimeout(this._checkVersionUpdatesTimeout);
+    this._checkVersionUpdatesTimeout = undefined;
   }
 
   /**
@@ -114,24 +128,15 @@ export class Housekeeper {
         throw new Error(`attempted to hard-delete a document that was not soft-deleted: ${doc.id}`);
       }
       // In general, documents can only be manipulated with the coordination of the
-      // document worker to which they are assigned.  For an old soft-deleted doc,
-      // we could probably get away with ensuring the document is closed/unloaded
-      // and then deleting it without ceremony.  But, for consistency, and because
-      // it will be useful for other purposes, we work through the api using special
-      // temporary permits.
-      const permitKey = await this._permitStore.setPermit({docId: doc.id});
+      // document worker to which they are assigned.
       try {
-        const result = await fetch(await this._server.getHomeUrlByDocId(doc.id, `/api/docs/${doc.id}`), {
-          method: 'DELETE',
-          headers: {
-            Permit: permitKey
-          }
-        });
-        if (result.status !== 200) {
-          log.error(`failed to delete document ${doc.id}: error status ${result.status}`);
+        await this._server.hardDeleteDoc(doc.id);
+      } catch (err) {
+        if (err instanceof ApiError) {
+          log.error(`failed to delete document ${doc.id}: error status ${err.status} ${err.message}`);
+        } else {
+          log.error(`failed to delete document ${doc.id}: error status ${String(err)}`);
         }
-      } finally {
-        await this._permitStore.removePermit(permitKey);
       }
     }
 

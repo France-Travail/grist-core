@@ -12,7 +12,7 @@
         "Reset": "Restablecer",
         "Save": "Guardar",
         "Saved": "Guardado",
-        "Type a message...": "Escribe un mensaje…",
+        "Type message to display when this rule blocks an action…": "Escribe un mensaje…",
         "User Attributes": "Atributos de usuario",
         "Users": "Usuarios",
         "Add Column Rule": "Agregar Regla de Columna",
@@ -36,7 +36,7 @@
         "Seed rules": "Reglas de semillas",
         "When adding table rules, automatically add a rule to grant OWNER full access.": "Al agregar reglas de tabla, agregue automáticamente una regla para otorgar acceso completo al PROPIETARIO.",
         "Permission to edit document structure": "Permiso para editar la estructura del documento",
-        "Allow editors to edit structure (e.g. modify and delete tables, columns, layouts), and to write formulas, which give access to all data regardless of read restrictions.": "Permitir a los editores editar la estructura (por ejemplo, modificar y eliminar tablas, columnas, diseños), y escribir fórmulas, que dan acceso a todos los datos independientemente de las restricciones de lectura.",
+        "Allow editors to edit structure (e.g., modify and delete tables, columns, and layouts) and write formulas. Regardless of the permissions set at the table and column level, formulas can still be edited and can access all data.": "Permitir a los editores editar la estructura (por ejemplo, modificar y eliminar tablas, columnas, diseños), y escribir fórmulas, que dan acceso a todos los datos independientemente de las restricciones de lectura.",
         "This default should be changed if editors' access is to be limited. ": "Este valor predeterminado debe cambiarse si se quiere limitar el acceso de los editores. ",
         "Add Table-wide Rule": "Añadir regla a toda la tabla"
     },
@@ -564,9 +564,9 @@
         "Workspace": "Espacio de trabajo",
         "You do not have write access to the selected workspace": "No tienes acceso de escritura al espacio de trabajo seleccionado",
         "You do not have write access to this site": "No tiene acceso de escritura a este sitio",
-        "Download full document and history": "Descargar documento completo e historial",
-        "Remove all data but keep the structure to use as a template": "Elimine todos los datos pero mantenga la estructura para usarla como plantilla",
-        "Remove document history (can significantly reduce file size)": "Eliminar el historial del documento (puede reducir significativamente el tamaño del archivo)",
+        "Download document and history": "Descargar documento completo e historial",
+        "Download document structure only (no data, for template use)": "Elimine todos los datos pero mantenga la estructura para usarla como plantilla",
+        "Download document without history (can significantly reduce file size)": "Eliminar el historial del documento (puede reducir significativamente el tamaño del archivo)",
         "Download": "Descargar",
         "Download document": "Descargar el documento"
     },
@@ -1316,7 +1316,8 @@
         "Two-way references are not currently supported for Formula or Trigger Formula columns": "Las referencias bidireccionales no son compatibles actualmente con las columnas de fórmula o fórmula de activación",
         "The preview below this header shows how the selected user will see this document": "La vista previa debajo de este encabezado muestra cómo verá este documento el usuario seleccionado",
         "[Learn more.]({{link}})": "[Aprende más.]({{link}})",
-        "Summary tables can only contain formula columns.": "Mesas de resumen sólo pueden contener columnas de fórmula."
+        "Summary tables can only contain formula columns.": "Mesas de resumen sólo pueden contener columnas de fórmula.",
+        "Manage users and resources in a Grist installation.": "Gestionar usuarios y recursos en una instalación de Grist."
     },
     "DescriptionConfig": {
         "DESCRIPTION": "DESCRIPCIÓN"
@@ -1567,7 +1568,7 @@
         "Save your document to publish this form.": "Guarde el documento para publicar este formulario.",
         "Share this form": "Compartir este formulario",
         "View": "Ver",
-        "## **Form Title**": "## **Título del formulario**",
+        "# **Form Title**": "# **Título del formulario**",
         "Your form description goes here.": "La descripción de su formulario va aquí."
     },
     "WelcomeCoachingCall": {
@@ -1594,11 +1595,14 @@
     },
     "CustomView": {
         "Some required columns aren't mapped": "Algunas columnas obligatorias no están asignadas",
-        "To use this widget, please map all non-optional columns from the creator panel on the right.": "Para utilizar este widget, asigne todas las columnas no opcionales desde el panel del creador de la derecha."
+        "To use this widget, please map all non-optional columns from the creator panel on the right.": "Para utilizar este widget, asigne todas las columnas no opcionales desde el panel del creador de la derecha.",
+        "Some required columns are hidden by access rules": "Algunas columnas requeridas están ocultas por reglas de acceso",
+        "To use this widget, all mapped columns must be visible. Please contact document owner or modify access rules.": "Para usar este widget, todas las columnas mapeadas deben ser visibles. Por favor contacte al propietario del documento o modifique las reglas de acceso."
     },
     "FormContainer": {
         "Build your own form": "Cree su propio formulario",
-        "Powered by": "Desarrollado por"
+        "Powered by": "Desarrollado por",
+        "Powered by Grist": "Desarrollado por Grist"
     },
     "FormErrorPage": {
         "Error": "Error"
@@ -1638,7 +1642,7 @@
     "Section": {
         "Insert section above": "Insertar la sección anterior",
         "Insert section below": "Insertar la sección siguiente",
-        "### **Header**": "### *Encabezado**",
+        "## **Header**": "## *Encabezado**",
         "Description": "Descripción"
     },
     "AdminPanel": {
@@ -1698,7 +1702,8 @@
         "New, Enterprise": "Nuevo, Empresa",
         "Contact us": "Contáctenos",
         "Off": "Apagar",
-        "On": "Encendido"
+        "On": "Encendido",
+        "Grist Instance": "Instancia Grist"
     },
     "CreateTeamModal": {
         "Cancel": "Cancelar",
@@ -2003,5 +2008,17 @@
         "Please review the following before adding a new custom widget.": "Por favor, revise lo siguiente antes de añadir un nuevo widget personalizado.",
         "Are you sure you **trust the resource** at this URL?": "¿Está seguro de que **confía en el recurso** de esta URL?",
         "If in doubt, do not install this widget, or ask an administrator of your organization to review it for safety.": "En caso de duda, no instale este widget, o pida a un administrador de su organización que lo revise por seguridad."
+    },
+    "AdminLeftPanel": {
+        "Admin area": "Área de administración",
+        "Admin controls": "Controles administrativos",
+        "Installation": "Instalación",
+        "Learn more": "Más información",
+        "Orgs": "Organizaciones",
+        "Docs": "Documentos",
+        "Users": "Usuarios",
+        "Admin Controls": "Controles administrativos",
+        "Settings": "Ajustes",
+        "Workspaces": "Espacios de trabajo"
     }
 }

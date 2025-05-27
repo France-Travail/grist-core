@@ -20,7 +20,9 @@ if (!debugging) {
 setDefaultEnv('GRIST_SESSION_COOKIE', 'grist_core2');
 
 setDefaultEnv('GRIST_SERVE_SAME_ORIGIN', 'true');
-setDefaultEnv('GRIST_SINGLE_PORT', 'true');
+if (!process.env.DOC_WORKER_COUNT) {
+  setDefaultEnv('GRIST_SINGLE_PORT', 'true');
+}
 setDefaultEnv('GRIST_DEFAULT_PRODUCT', 'Free');
 
 if (!process.env.GRIST_SINGLE_ORG) {
@@ -30,7 +32,7 @@ if (!process.env.GRIST_SINGLE_ORG) {
 }
 
 setDefaultEnv('GRIST_UI_FEATURES',
-  'helpCenter,billing,templates,multiSite,multiAccounts,sendToDrive,createSite,supportGrist');
+  'helpCenter,billing,templates,multiSite,multiAccounts,sendToDrive,createSite,supportGrist,themes');
 setDefaultEnv('GRIST_WIDGET_LIST_URL', commonUrls.gristLabsWidgetRepository);
 import {updateDb} from 'app/server/lib/dbUtils';
 import {MergedServer, parseServerTypes} from 'app/server/MergedServer';

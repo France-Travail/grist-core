@@ -1,5 +1,5 @@
 import { Level, TelemetryContracts } from 'app/common/Telemetry';
-import { version } from 'app/common/version';
+import { gitcommit, version } from 'app/common/version';
 import { synchronizeProducts } from 'app/gen-server/entity/Product';
 import { HomeDBManager } from 'app/gen-server/lib/homedb/HomeDBManager';
 import { applyPatch } from 'app/gen-server/lib/TypeORMPatches';
@@ -40,8 +40,7 @@ if (require.main === module) {
 export function getProgram(): commander.Command {
   const program = commander.program;
   program
-    .name('grist-toolbox')    // haven't really settled on a name yet.
-                              // want to reserve "grist" for electron app?
+    .name('grist-cli')
     .description('a toolbox of handy Grist-related utilities');
 
   addAuditLogsCommand(program, {nested: true});
@@ -273,7 +272,17 @@ export function addSqliteCommand(program: commander.Command) {
 export function addVersionCommand(program: commander.Command) {
   program.command('version')
     .description('show Grist version')
-    .action(() => console.log(version));
+    .option('--with-commit', 'include the commit string')
+    .option('--verbose', 'use your words')
+    .action((options) => {
+      if (options.verbose) {
+        const displayVersion = options.withCommit ? `${version} (commit ${gitcommit})` : version;
+        console.log(`Grist version is ${displayVersion}`);
+      } else {
+        const displayVersion = options.withCommit ? `${version} ${gitcommit}` : version;
+        console.log(displayVersion);
+      }
+    });
 }
 
 // Report the status of the database. Migrations appied, migrations pending,

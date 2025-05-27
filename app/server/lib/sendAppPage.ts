@@ -1,9 +1,11 @@
+import {AssistantConfig} from 'app/common/Assistant';
 import {
   commonUrls,
   Features,
   getContactSupportUrl,
   getFreeCoachingCallUrl,
   getHelpCenterUrl,
+  getOnboardingVideoId,
   getPageTitleSuffix,
   getTermsOfServiceUrl,
   GristLoadConfig,
@@ -78,6 +80,7 @@ export function makeGristConfig(options: MakeGristConfigOptions): GristLoadConfi
     helpCenterUrl: getHelpCenterUrl(),
     termsOfServiceUrl: getTermsOfServiceUrl(),
     freeCoachingCallUrl: getFreeCoachingCallUrl(),
+    onboardingTutorialVideoId: getOnboardingVideoId(),
     contactSupportUrl: getContactSupportUrl(),
     pathOnly,
     supportAnon: shouldSupportAnon(),
@@ -103,10 +106,7 @@ export function makeGristConfig(options: MakeGristConfigOptions): GristLoadConfi
     supportedLngs: readLoadedLngs(req?.i18n),
     namespaces: readLoadedNamespaces(req?.i18n),
     featureComments: isAffirmative(process.env.COMMENTS),
-    featureFormulaAssistant: Boolean(process.env.OPENAI_API_KEY ||
-      process.env.ASSISTANT_API_KEY  ||
-      process.env.ASSISTANT_CHAT_COMPLETION_ENDPOINT),
-    assistantService: process.env.OPENAI_API_KEY ? 'OpenAI' : undefined,
+    assistant: getAssistantConfig(server),
     permittedCustomWidgets: getPermittedCustomWidgets(server),
     supportEmail: SUPPORT_EMAIL,
     userLocale: (req as RequestWithLogin | undefined)?.user?.options?.locale,
@@ -250,6 +250,16 @@ function getFeatures(): IFeature[] {
   return Features.checkAll(difference(enabledFeatures, disabledFeatures));
 }
 
+function getAssistantConfig(gristServer?: GristServer|null): AssistantConfig|undefined {
+  const assistant = gristServer?.getAssistant();
+  if (!assistant) {
+    return undefined;
+  }
+
+  const {provider, version} = assistant;
+  return {provider, version};
+}
+
 function getPermittedCustomWidgets(gristServer?: GristServer|null): IAttachedCustomWidget[] {
   if (!process.env.PERMITTED_CUSTOM_WIDGETS && gristServer) {
     // The PERMITTED_CUSTOM_WIDGETS environment variable is a bit of
@@ -292,14 +302,19 @@ function getDocName(config: GristLoadConfig): string|null {
 /**
  * Returns a string representation of 0 or more HTML metadata elements.
  *
- * Currently includes the document description and thumbnail if the requested page is
- * for a document and the document has one set.
+ * Currently includes the noindex tag, and the document description and
+ * thumbnail if the requested page is for a document and the document has one
+ * set.
  *
  * Note: The string returned is escaped and safe to insert into HTML.
  */
 function getPageMetadataHtmlSnippet(req: express.Request, config: GristLoadConfig): string {
   const metadataElements: string[] = [];
   const maybeDoc = getDocFromConfig(config);
+
+  if (maybeDoc?.options?.allowIndex !== true) {
+    metadataElements.push('<meta name="robots" content="noindex">');
+  }
 
   metadataElements.push('<meta property="og:type" content="website">');
   metadataElements.push('<meta name="twitter:card" content="summary_large_image">');

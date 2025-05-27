@@ -3,6 +3,7 @@ import {makeT} from 'app/client/lib/localization';
 import {cssMarkdownSpan} from 'app/client/lib/markdown';
 import {buildHighlightedCode} from 'app/client/ui/CodeHighlight';
 import {ShortcutKey, ShortcutKeyContent} from 'app/client/ui/ShortcutKey';
+import {basicButtonLink} from 'app/client/ui2018/buttons';
 import {icon} from 'app/client/ui2018/icons';
 import {cssLink} from 'app/client/ui2018/links';
 import {commonUrls, GristDeploymentType} from 'app/common/gristUrls';
@@ -30,6 +31,23 @@ const cssIcon = styled(icon, `
   width: 18px;
 `);
 
+const cssNewsPopupLink = styled(basicButtonLink, `
+  color: white;
+  border: 1px solid white;
+  padding: 3px;
+
+  &:hover, &:focus, &:visited {
+    color: white;
+    border-color: white;
+  }
+`);
+
+const cssNewAssistantTitle = styled('div', `
+  display: flex;
+  align-items: center;
+  column-gap: 8px;
+`);
+
 export type Tooltip =
   | 'dataSize'
   | 'setTriggerFormula'
@@ -50,6 +68,7 @@ export type Tooltip =
   | 'viewAsBanner'
   | 'reassignTwoWayReference'
   | 'attachmentStorage'
+  | 'uploadAttachments'
   | 'adminControls'
   ;
 
@@ -216,6 +235,15 @@ see or edit which parts of your document.')
     dom('div', cssLink({href: commonUrls.helpAdminControls, target: "_blank"}, t('Learn more.'))),
     ...args,
   ),
+  uploadAttachments: (...args: DomElementArg[]) => cssTooltipContent(
+    cssMarkdownSpan(
+      t(
+        "This allows you to add attachments that are missing from external storage, e.g. in an imported document. " +
+        "Only .tar attachment archives downloaded from Grist can be uploaded here."
+      ),
+    ),
+    ...args,
+  ),
 };
 
 type ErrorTooltip = 'summaryFormulas';
@@ -236,7 +264,7 @@ export const ErrorTooltips: Record<ErrorTooltip, TooltipContentFunc> = {
 
 export interface BehavioralPromptContent {
   popupType: 'tip' | 'news';
-  title: () => string;
+  title: () => DomContents;
   content: (...domArgs: DomElementArg[]) => DomContents;
   deploymentTypes: GristDeploymentType[] | 'all';
   /** Defaults to `everyone`. */
@@ -399,5 +427,29 @@ data.")),
       ...args,
     ),
     deploymentTypes: ['saas', 'core', 'enterprise', 'electron'],
+  },
+  newAssistant: {
+    popupType: 'news',
+    audience: 'signed-in-users',
+    title: () => cssNewAssistantTitle(
+      icon('Robot'),
+      t('The new Grist Assistant is here!'),
+    ),
+    content: (...args: DomElementArg[]) => cssTooltipContent(
+      dom('div',
+        t(
+          "Understand, modify and work with your data and formulas " +
+            "with the help of Grist's new AI Assistant!",
+        )
+      ),
+      dom('div',
+        cssNewsPopupLink(t('Learn more'), {
+          href: commonUrls.helpAssistant,
+          target: '_blank',
+        }),
+      ),
+      ...args
+    ),
+    deploymentTypes: ['saas', 'enterprise'],
   },
 };
